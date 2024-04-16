@@ -156,10 +156,10 @@ pub mod pallet {
 			<Allowances<T>>::set(&from, &spender, allowance - value);
 			// Self::decrease_allowance(origin, spender.clone(), value)?;
 
-			<Balances<T>>::set(&spender, sender_balance - value);
+			<Balances<T>>::set(&from, sender_balance - value);
 			<Balances<T>>::set(&to, receiver_balance + value);
 
-			Self::deposit_event(Event::Transfer {from: spender, to, value});
+			Self::deposit_event(Event::Transfer {from, to, value});
 
 			Ok(())
 		}
