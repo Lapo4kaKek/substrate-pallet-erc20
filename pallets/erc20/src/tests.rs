@@ -20,8 +20,20 @@ fn should_increase_total_supply_on_mint() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(ERC20Token::mint(RuntimeOrigin::signed(1), 100));
 		assert_ok!(ERC20Token::mint(RuntimeOrigin::signed(2), 200));
+
 		assert_eq!(ERC20Token::total_supply(), 300);
 	});
+}
+
+#[test]
+fn should_fail_transfer_insufficient_balance() {
+ new_test_ext().execute_with(|| {
+  System::set_block_number(1);
+  assert_noop!(
+   ERC20Token::transfer(RuntimeOrigin::signed(1).into(), 1, 50),
+   Error::<Test>::ERC20InsufficientBalance
+  );
+ });
 }
 
 
@@ -35,6 +47,22 @@ fn should_decrease_total_supply_on_burn() {
 	});
 }
 
+#[test]
+fn test_events() {
+ new_test_ext().execute_with(|| {
+  System::set_block_number(1);
+  assert_ok!(ERC20Token::mint(RuntimeOrigin::signed(1).into(), 100));
+  System::assert_last_event(Event::Mint { account: 1, value: 100 }.into());
+  assert_ok!(ERC20Token::transfer(RuntimeOrigin::signed(1).into(), 2, 50));
+  System::assert_last_event(Event::Transfer { from: 1, to: 2, value: 50 }.into());
+  assert_ok!(ERC20Token::approve(RuntimeOrigin::signed(1), 2, 50));
+  System::assert_last_event(Event::Approval { owner: 1, spender: 2, value: 50 }.into());
+  assert_ok!(ERC20Token::transfer_from(RuntimeOrigin::signed(2), 1, 3, 40));
+  System::assert_last_event(Event::Transfer { from: 1, to: 3, value: 40 }.into());
+  assert_ok!(ERC20Token::burn(RuntimeOrigin::signed(1), 10));
+  System::assert_last_event(Event::Burn { account: 1, value: 10 }.into());
+ });
+}
 
 
 #[test]
