@@ -278,7 +278,7 @@ impl pallet_erc20::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	// added this
 	type WeightInfo = pallet_erc20::weights::SubstrateWeight<Runtime>;
-	// my custom types
+	// my custom
 	type TokenDecimals = TokenDecimals;
 	type TokenSymbol = TokenSymbol;
 	type TokenName = TokenName;

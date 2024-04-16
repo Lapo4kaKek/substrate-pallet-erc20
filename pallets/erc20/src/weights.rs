@@ -34,57 +34,70 @@ use core::marker::PhantomData;
 
 /// Weight functions needed for pallet_template.
 pub trait WeightInfo {
-	fn do_something() -> Weight;
-	fn cause_error() -> Weight;
+	fn transfer() -> Weight;
+	fn transfer_from() -> Weight;
+	fn approve() -> Weight;
+	fn mint() -> Weight;
+	fn burn() -> Weight;
+	fn increase_allowance() -> Weight;
+	fn decrease_allowance() -> Weight;
 }
 
 /// Weights for pallet_template using the Substrate node and recommended hardware.
 pub struct SubstrateWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
-	/// Storage: TemplateModule Something (r:0 w:1)
-	/// Proof: TemplateModule Something (max_values: Some(1), max_size: Some(4), added: 499, mode: MaxEncodedLen)
-	fn do_something() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `0`
-		//  Estimated: `0`
-		// Minimum execution time: 8_000_000 picoseconds.
-		Weight::from_parts(9_000_000, 0)
-			.saturating_add(T::DbWeight::get().writes(1_u64))
+	fn approve() -> Weight {
+		Weight::from_parts(8_000_000, 0).saturating_add(RocksDbWeight::get().writes(1_u64))
 	}
-	/// Storage: TemplateModule Something (r:1 w:1)
-	/// Proof: TemplateModule Something (max_values: Some(1), max_size: Some(4), added: 499, mode: MaxEncodedLen)
-	fn cause_error() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `32`
-		//  Estimated: `1489`
-		// Minimum execution time: 6_000_000 picoseconds.
-		Weight::from_parts(6_000_000, 1489)
-			.saturating_add(T::DbWeight::get().reads(1_u64))
-			.saturating_add(T::DbWeight::get().writes(1_u64))
+	fn transfer() -> Weight {
+		Weight::from_parts(8_000_000, 0).saturating_add(T::DbWeight::get().writes(1_u64))
 	}
+
+	fn transfer_from() -> Weight {
+		Weight::from_parts(12_000_000, 0).saturating_add(RocksDbWeight::get().writes(1_u64))
+	}
+
+	fn burn() -> Weight {
+		Weight::from_parts(11_000_000, 0).saturating_add(RocksDbWeight::get().writes(1_u64))
+	}
+	fn mint() -> Weight {
+		Weight::from_parts(11_000_000, 0).saturating_add(RocksDbWeight::get().writes(1_u64))
+	}
+	fn increase_allowance() -> Weight {
+		Weight::from_parts(10_000_000, 0).saturating_add(RocksDbWeight::get().writes(1_u64))
+	}
+	fn decrease_allowance() -> Weight {
+		Weight::from_parts(10_000_000, 0).saturating_add(RocksDbWeight::get().writes(1_u64))
+	}
+
+
 }
 
 // For backwards compatibility and tests
 impl WeightInfo for () {
-	/// Storage: TemplateModule Something (r:0 w:1)
-	/// Proof: TemplateModule Something (max_values: Some(1), max_size: Some(4), added: 499, mode: MaxEncodedLen)
-	fn do_something() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `0`
-		//  Estimated: `0`
-		// Minimum execution time: 8_000_000 picoseconds.
+	fn approve() -> Weight {
 		Weight::from_parts(9_000_000, 0)
-			.saturating_add(RocksDbWeight::get().writes(1_u64))
 	}
-	/// Storage: TemplateModule Something (r:1 w:1)
-	/// Proof: TemplateModule Something (max_values: Some(1), max_size: Some(4), added: 499, mode: MaxEncodedLen)
-	fn cause_error() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `32`
-		//  Estimated: `1489`
-		// Minimum execution time: 6_000_000 picoseconds.
-		Weight::from_parts(6_000_000, 1489)
-			.saturating_add(RocksDbWeight::get().reads(1_u64))
-			.saturating_add(RocksDbWeight::get().writes(1_u64))
+	fn transfer() -> Weight {
+		Weight::from_parts(9_000_000, 0)
+	}
+
+	fn transfer_from() -> Weight {
+		Weight::from_parts(9_000_000, 0)
+	}
+
+	fn mint() -> Weight {
+		Weight::from_parts(9_000_000, 0)
+	}
+
+	fn burn() -> Weight {
+		Weight::from_parts(9_000_000, 0)
+	}
+
+	fn increase_allowance() -> Weight {
+		Weight::from_parts(9_000_000, 0)
+	}
+	fn decrease_allowance() -> Weight {
+		Weight::from_parts(9_000_000, 0)
 	}
 }

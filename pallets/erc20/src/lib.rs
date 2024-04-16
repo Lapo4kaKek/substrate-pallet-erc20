@@ -108,7 +108,7 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::call_index(0)]
-		#[pallet::weight(T::WeightInfo::do_something())]
+		#[pallet::weight(T::WeightInfo::approve())]
 		pub fn approve(origin: OriginFor<T>, spender: T::AccountId, value: u64) -> DispatchResult {
 			let owner = ensure_signed(origin)?;
 			
@@ -120,7 +120,7 @@ pub mod pallet {
 		}
 
 		#[pallet::call_index(1)]
-		#[pallet::weight(T::WeightInfo::do_something())]
+		#[pallet::weight(T::WeightInfo::transfer())]
 		pub fn transfer(origin: OriginFor<T>, to: T::AccountId, value: u64) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 			
@@ -133,13 +133,13 @@ pub mod pallet {
 			<Balances<T>>::set(&sender, sender_balance - value);
 			<Balances<T>>::set(&to, receiver_balance + value);
 
-			Self::deposit_event(Event::Transfer {from: sender.clone(), to, value});
+			Self::deposit_event(Event::Transfer {from: sender, to, value});
 
 			Ok(())
 		}
 
 		#[pallet::call_index(2)]
-		#[pallet::weight(T::WeightInfo::do_something())]
+		#[pallet::weight(T::WeightInfo::transfer_from())]
 		pub fn transfer_from(origin: OriginFor<T>, from: T::AccountId, to: T::AccountId, value: u64) -> DispatchResult {
 			let spender = ensure_signed(origin)?;
 			
@@ -165,7 +165,7 @@ pub mod pallet {
 		}
 
 		#[pallet::call_index(3)]
-		#[pallet::weight(T::WeightInfo::do_something())]
+		#[pallet::weight(T::WeightInfo::burn())]
 		pub fn burn(origin: OriginFor<T>, value: u64) -> DispatchResult {
 			let owner = ensure_signed(origin)?;
 			let owner_balance = <Balances<T>>::get(&owner);
@@ -178,7 +178,7 @@ pub mod pallet {
 		}
 
 		#[pallet::call_index(4)]
-		#[pallet::weight(T::WeightInfo::do_something())]
+		#[pallet::weight(T::WeightInfo::mint())]
 		pub fn mint(origin: OriginFor<T>, value: u64) -> DispatchResult {
 			let owner = ensure_signed(origin)?;
 			let total_supply = <TotalSupply<T>>::get();
@@ -191,7 +191,7 @@ pub mod pallet {
 		}	
 
 		#[pallet::call_index(5)]
-		#[pallet::weight(T::WeightInfo::do_something())]
+		#[pallet::weight(T::WeightInfo::increase_allowance())]
 		pub fn increase_allowance(origin: OriginFor<T>, spender: T::AccountId, value: u64) -> DispatchResult {
 			let owner = ensure_signed(origin)?;
 			let current_allowance = <Allowances<T>>::get(&owner, &spender);
@@ -205,7 +205,7 @@ pub mod pallet {
 		}
 
 		#[pallet::call_index(6)]
-		#[pallet::weight(T::WeightInfo::do_something())]
+		#[pallet::weight(T::WeightInfo::decrease_allowance())]
 		pub fn decrease_allowance(origin: OriginFor<T>, spender: T::AccountId, value: u64 ) -> DispatchResult {
 			let owner = ensure_signed(origin)?;
             let current_allowance = <Allowances<T>>::get(&owner, &spender);
