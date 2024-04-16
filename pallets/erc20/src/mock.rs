@@ -46,8 +46,8 @@ impl frame_system::Config for Test {
 }
 // i added this types 
 parameter_types! {
-	pub TokenName: Vec<u8> = b"Test Token".to_vec();
-	pub TokenSymbol: Vec<u8> = b"TEST".to_vec();
+	pub TokenName: Vec<u8> = b"POVEL DUREV".to_vec();
+	pub TokenSymbol: Vec<u8> = b"DUREV".to_vec();
 	pub const TokenDecimals: u8 = 18;
 }
 
