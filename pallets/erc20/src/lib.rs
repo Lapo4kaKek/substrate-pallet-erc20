@@ -19,8 +19,10 @@ pub use weights::*;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::*;
+	use frame_support::{pallet_prelude::*,  Blake2_128Concat};
 	use frame_system::pallet_prelude::*;
+
+	use scale_info::prelude::vec::Vec;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -32,6 +34,12 @@ pub mod pallet {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Type representing the weight of this pallet
 		type WeightInfo: WeightInfo;
+		#[pallet::constant]
+		type TokenName: Get<Vec<u8>>;
+		#[pallet::constant]
+		type TokenSymbol: Get<Vec<u8>>;
+		#[pallet::constant]
+		type TokenDecimals: Get<u8>;
 	}
 
 	// The pallet's runtime storage items.
@@ -42,23 +50,56 @@ pub mod pallet {
 	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
 	pub type Something<T> = StorageValue<_, u32>;
 
+	// default total supply = 0
+	#[pallet::type_value]
+	pub(super) fn TotalSupplyDefault<T: Config>() -> u64 {
+		0
+	}
+
+	#[pallet::storage]
+	#[pallet::getter(fn total_supply)]
+	type TotalSupply<T: Config> =
+		StorageValue<Value = u64, QueryKind = ValueQuery, OnEmpty = TotalSupplyDefault<T>>;
+
+
+	#[pallet::storage]
+	#[pallet::getter(fn balances)]
+	pub type Balances<T: Config> = StorageMap<_, Blake2_128Concat, T::AccountId, u64, ValueQuery>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn allowances)]
+	pub type Allowances<T: Config> = StorageDoubleMap<
+		_,
+		Blake2_128Concat,
+		T::AccountId,
+		Blake2_128Concat,
+		T::AccountId,
+		u64,
+		ValueQuery,
+	>;
+
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/main-docs/build/events-errors/
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Event documentation should end with an array that provides descriptive names for event
-		/// parameters. [something, who]
-		SomethingStored { something: u32, who: T::AccountId },
+		Transfer { from: T::AccountId, to: T::AccountId, value: u64 },
+		Approval { owner: T::AccountId, spender: T::AccountId, value: u64 },
+		Mint { account: T::AccountId, value: u64 },
+		Burn { account: T::AccountId, value: u64 },
 	}
 
 	// Errors inform users that something went wrong.
 	#[pallet::error]
 	pub enum Error<T> {
-		/// Error names should be descriptive.
-		NoneValue,
-		/// Errors should have helpful documentation associated with them.
-		StorageOverflow,
+		ERC20InsufficientBalance,
+		ERC20InvalidSender,
+		ERC20InvalidReceiver,
+		ERC20InsufficientAllowance,
+		ERC20InvalidApprover,
+		ERC20InvalidSpender,
+		AllowanceOverflow, // Maybe it's too much 
+		AllowanceUnderflow, // Maybe it's too much 
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -66,43 +107,10 @@ pub mod pallet {
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// An example dispatchable that takes a singles value as a parameter, writes the value to
-		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		#[pallet::call_index(0)]
 		#[pallet::weight(T::WeightInfo::do_something())]
-		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResult {
-			// Check that the extrinsic was signed and get the signer.
-			// This function will return an error if the extrinsic is not signed.
-			// https://docs.substrate.io/main-docs/build/origins/
-			let who = ensure_signed(origin)?;
-
-			// Update storage.
-			<Something<T>>::put(something);
-
-			// Emit an event.
-			Self::deposit_event(Event::SomethingStored { something, who });
-			// Return a successful DispatchResultWithPostInfo
-			Ok(())
-		}
-
-		/// An example dispatchable that may throw a custom error.
-		#[pallet::call_index(1)]
-		#[pallet::weight(T::WeightInfo::cause_error())]
-		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
-			let _who = ensure_signed(origin)?;
-
-			// Read a value from storage.
-			match <Something<T>>::get() {
-				// Return an error if the value has not been set.
-				None => return Err(Error::<T>::NoneValue.into()),
-				Some(old) => {
-					// Increment the value read from storage; will error in the event of overflow.
-					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
-					// Update the value in storage with the incremented result.
-					<Something<T>>::put(new);
-					Ok(())
-				},
-			}
+		pub fn approve(origin: OriginFor<T>, spender: T::AccountId, value: u64) -> DispatchResult {
+			unimplemented!()
 		}
 	}
 }

@@ -1,10 +1,12 @@
-use crate as pallet_template;
+use crate as pallet_erc20;
 use frame_support::traits::{ConstU16, ConstU64};
 use sp_core::H256;
 use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 	BuildStorage,
 };
+use scale_info::prelude::string::String;
+pub use frame_support::parameter_types;
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -13,7 +15,7 @@ frame_support::construct_runtime!(
 	pub enum Test
 	{
 		System: frame_system,
-		TemplateModule: pallet_template,
+		ERC20Token: pallet_erc20,
 	}
 );
 
@@ -42,10 +44,20 @@ impl frame_system::Config for Test {
 	type OnSetCode = ();
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
+// i added this types 
+parameter_types! {
+	pub TokenName: Vec<u8> = b"Test Token".to_vec();
+	pub TokenSymbol: Vec<u8> = b"TEST".to_vec();
+	pub const TokenDecimals: u8 = 18;
+}
 
-impl pallet_template::Config for Test {
+impl pallet_erc20::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
+	// added
+	type WeightInfo = pallet_erc20::weights::SubstrateWeight<Test>;
+	type TokenDecimals = TokenDecimals;
+	type TokenSymbol = TokenSymbol;
+	type TokenName = TokenName;
 }
 
 // Build genesis storage according to the mock runtime.
