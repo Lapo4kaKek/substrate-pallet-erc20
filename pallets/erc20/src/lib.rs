@@ -110,7 +110,113 @@ pub mod pallet {
 		#[pallet::call_index(0)]
 		#[pallet::weight(T::WeightInfo::do_something())]
 		pub fn approve(origin: OriginFor<T>, spender: T::AccountId, value: u64) -> DispatchResult {
-			unimplemented!()
+			let owner = ensure_signed(origin)?;
+			
+			<Allowances<T>>::set(&owner, &spender, value);
+			//Self::increase_allowance(origin, spender.clone(), value)?;
+
+			Self::deposit_event(Event::Approval { owner, spender, value });
+			Ok(())
 		}
+
+		#[pallet::call_index(1)]
+		#[pallet::weight(T::WeightInfo::do_something())]
+		pub fn transfer(origin: OriginFor<T>, to: T::AccountId, value: u64) -> DispatchResult {
+			let sender = ensure_signed(origin)?;
+			
+			let sender_balance = Balances::<T>::get(&sender);
+			let receiver_balance = Balances::<T>::get(&to);
+
+			// check balance
+			ensure!(sender_balance >= value, Error::<T>::ERC20InsufficientBalance);
+
+			<Balances<T>>::set(&sender, sender_balance - value);
+			<Balances<T>>::set(&to, receiver_balance + value);
+
+			Self::deposit_event(Event::Transfer {from: sender.clone(), to, value});
+
+			Ok(())
+		}
+
+		#[pallet::call_index(2)]
+		#[pallet::weight(T::WeightInfo::do_something())]
+		pub fn transfer_from(origin: OriginFor<T>, from: T::AccountId, to: T::AccountId, value: u64) -> DispatchResult {
+			let spender = ensure_signed(origin)?;
+			
+			let sender_balance = Balances::<T>::get(&from);
+			let receiver_balance = Balances::<T>::get(&to);
+			
+			let allowance = <Allowances<T>>::get(&from, &spender);
+
+			// check allowance
+			ensure!(allowance >= value, Error::<T>::ERC20InsufficientAllowance);
+			// check balance
+			ensure!(sender_balance >= value, Error::<T>::ERC20InsufficientBalance);
+
+			<Allowances<T>>::set(&from, &spender, allowance - value);
+			// Self::decrease_allowance(origin, spender.clone(), value)?;
+
+			<Balances<T>>::set(&spender, sender_balance - value);
+			<Balances<T>>::set(&to, receiver_balance + value);
+
+			Self::deposit_event(Event::Transfer {from: spender, to, value});
+
+			Ok(())
+		}
+
+		#[pallet::call_index(3)]
+		#[pallet::weight(T::WeightInfo::do_something())]
+		pub fn burn(origin: OriginFor<T>, value: u64) -> DispatchResult {
+			let owner = ensure_signed(origin)?;
+			let owner_balance = <Balances<T>>::get(&owner);
+			ensure!(owner_balance >= value, Error::<T>::ERC20InsufficientBalance);
+			let total_supply = <TotalSupply<T>>::get();
+			<TotalSupply<T>>::put(total_supply - value);
+			<Balances<T>>::set(&owner, owner_balance - value);
+			Self::deposit_event(Event::Burn { account: owner.clone(), value });
+			Ok(())
+		}
+
+		#[pallet::call_index(4)]
+		#[pallet::weight(T::WeightInfo::do_something())]
+		pub fn mint(origin: OriginFor<T>, value: u64) -> DispatchResult {
+			let owner = ensure_signed(origin)?;
+			let total_supply = <TotalSupply<T>>::get();
+
+			<TotalSupply<T>>::put(total_supply + value);
+			<Balances<T>>::set(&owner, <Balances<T>>::get(&owner) + value);
+
+			Self::deposit_event(Event::Mint { account: owner.clone(), value });
+			Ok(())
+		}	
+
+		#[pallet::call_index(5)]
+		#[pallet::weight(T::WeightInfo::do_something())]
+		pub fn increase_allowance(origin: OriginFor<T>, spender: T::AccountId, value: u64) -> DispatchResult {
+			let owner = ensure_signed(origin)?;
+			let current_allowance = <Allowances<T>>::get(&owner, &spender);
+
+			let updated_allowance = current_allowance.checked_add(value).ok_or(Error::<T>::AllowanceOverflow)?;
+
+			<Allowances<T>>::insert(&owner, &spender, updated_allowance);
+
+			Self::deposit_event(Event::Approval { owner, spender, value: updated_allowance });
+			Ok(())
+		}
+
+		#[pallet::call_index(6)]
+		#[pallet::weight(T::WeightInfo::do_something())]
+		pub fn decrease_allowance(origin: OriginFor<T>, spender: T::AccountId, value: u64 ) -> DispatchResult {
+			let owner = ensure_signed(origin)?;
+            let current_allowance = <Allowances<T>>::get(&owner, &spender);
+
+            let updated_allowance = current_allowance.checked_sub(value).ok_or(Error::<T>::AllowanceUnderflow)?;
+
+            <Allowances<T>>::insert(&owner, &spender, updated_allowance);
+
+            Self::deposit_event(Event::Approval { owner, spender, value: updated_allowance });
+            Ok(())
+        }
+
 	}
 }
